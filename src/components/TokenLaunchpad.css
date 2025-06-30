@@ -1,0 +1,89 @@
+.launchpad-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    background-color: #1c1c1e;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 480px;
+    margin: 40px auto;
+    border: 1px solid #333;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.launchpad-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #f5f5f7;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.input-group {
+    position: relative;
+    width: 100%;
+    margin-bottom: 24px;
+}
+
+.input-label {
+    position: absolute;
+    left: 14px;
+    top: 14px;
+    color: #8e8e93;
+    font-size: 1rem;
+    pointer-events: none;
+    transition: all 0.2s ease-out;
+}
+
+.input-group.is-focused .input-label,
+.input-group .input-field:not(:placeholder-shown) + .input-label {
+    top: 4px;
+    font-size: 0.75rem;
+    color: #0a84ff;
+}
+
+.input-field {
+    width: 100%;
+    padding: 14px;
+    font-size: 1rem;
+    color: #f5f5f7;
+    background-color: #2c2c2e;
+    border: 1px solid #444;
+    border-radius: 10px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: #0a84ff;
+    box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3);
+}
+
+.create-button {
+    width: 100%;
+    padding: 14px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #fff;
+    background-color: #0a84ff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    margin-top: 8px;
+}
+
+.create-button:hover {
+    background-color: #007aff;
+    transform: translateY(-2px);
+}
+
+.create-button:disabled {
+    background-color: #555;
+    color: #aaa;
+    cursor: not-allowed;
+    transform: none;
+}

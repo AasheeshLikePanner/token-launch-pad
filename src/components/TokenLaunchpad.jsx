@@ -1,7 +1,7 @@
 import { createInitializeMetadataPointerInstruction, createInitializeMintInstruction, ExtensionType, getMintLen, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { Keypair, SystemProgram, Transaction } from '@solana/web3.js';
-import { createInitializeInstruction, pack } from '@solana/spl-token-2022';
+import { createInitializeInstruction, pack } from '@solana/spl-token-metadata';
 import React, { useState } from 'react';
 import './TokenLaunchpad.css';
 
@@ -36,6 +36,78 @@ export default function TokenLaunchpad() {
 
     const { connection } = useConnection();
     const { publicKey, sendTransaction } = useWallet();
+
+    const createToken = async () => {
+        if (!publicKey) {
+            alert("Please connect your wallet!");
+            return;
+        }
+        setIsLoading(true);
+        try {
+            const mintKeypair = Keypair.generate();
+            const metaData = {
+                updateAuthority: publicKey,
+                mint: mintKeypair.publicKey,
+                name,
+                symbol,
+                uri: imageUrl,
+                additionalMetadata: [],
+            };
+
+            const mintLen = getMintLen([ExtensionType.MetadataPointer]);
+            const metaDataLen = pack(metaData).length;
+
+            const lamports = await connection.getMinimumBalanceForRentExemption(mintLen + metaDataLen);
+
+            const transaction = new Transaction().add(
+                SystemProgram.createAccount({
+                    fromPubkey: publicKey,
+                    newAccountPubkey: mintKeypair.publicKey,
+                    space: mintLen + metaDataLen,
+                    lamports,
+                    programId: TOKEN_2022_PROGRAM_ID,
+                }),
+                createInitializeMetadataPointerInstruction(
+                    mintKeypair.publicKey,
+                    publicKey,
+                    mintKeypair.publicKey,
+                    TOKEN_2022_PROGRAM_ID,
+                ),
+                createInitializeMintInstruction(
+                    mintKeypair.publicKey,
+                    9, // Decimals
+                    publicKey,
+                    publicKey,
+                    TOKEN_2022_PROGRAM_ID,
+                ),
+                createInitializeInstruction({
+                    programId: TOKEN_2022_PROGRAM_ID,
+                    metadata: mintKeypair.publicKey,
+                    mint: mintKeypair.publicKey,
+                    mintAuthority: publicKey,
+                    name: metaData.name,
+                    symbol: metaData.symbol,
+                    uri: metaData.uri,
+                    updateAuthority: publicKey,
+                }),
+            );
+            transaction.feePayer = publicKey;
+            transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+            transaction.partialSign(mintKeypair);
+
+            const signature = await sendTransaction(transaction, connection, {
+                signers: [mintKeypair],
+            });
+
+            await connection.confirmTransaction(signature, 'confirmed');
+            alert(`Token created successfully! Signature: ${signature}`);
+        } catch (error) {
+            console.error("Token creation failed", error);
+            alert(`Token creation failed: ${error.message}`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const isButtonDisabled = !name || !symbol || !imageUrl || !amount || isLoading;
 
